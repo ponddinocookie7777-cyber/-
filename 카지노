@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기련카지노</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    background:#0f172a;
+    color:white;
+    font-family:sans-serif;
+    text-align:center;
+}
+
+header{
+    background:#111827;
+    padding:15px;
+    font-size:30px;
+    font-weight:bold;
+}
+
+.panel{
+    background:#1e293b;
+    width:90%;
+    max-width:750px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:15px;
+}
+
+button{
+    padding:10px 20px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+input{
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    margin:5px;
+}
+
+#reels{
+    font-size:60px;
+    margin:20px;
+}
+
+#notice{
+    background:#7c3aed;
+    padding:12px;
+}
+
+#adminLogs,
+#chipHistory{
+    height:200px;
+    overflow:auto;
+    background:#111827;
+    padding:10px;
+    border-radius:10px;
+    text-align:left;
+}
+
+canvas{
+    border-radius:10px;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+🎰 기련카지노
+</header>
+
+<div id="notice">
+공지사항 없음
+</div>
+
+<div id="loginPanel" class="panel">
+
+<h2>로그인 / 회원가입</h2>
+
+<input
+id="username"
+placeholder="닉네임"
+/>
+
+<br>
+
+<input
+id="password"
+type="password"
+placeholder="비밀번호"
+/>
+
+<br><br>
+
+<button onclick="login()">
+입장
+</button>
+
+<p>
+관리자 계정 :
+<b>ヨルシカ</b>
+</p>
+
+<p>
+관리자 비밀번호 :
+<b>1125</b>
+</p>
+
+</div>
+
+<div
+id="gamePanel"
+style="display:none;"
+>
+
+<div class="panel">
+
+<h2>
+환영합니다
+<span id="playerName"></span>
+님
+</h2>
+
+<h3>
+💰 칩 :
+<span id="chips">1000</span>
+</h3>
+
+<h3>
+⭐ 레벨 :
+<span id="level">1</span>
+</h3>
+
+<h3>
+✨ XP :
+<span id="xp">0</span>
+</h3>
+
+<button onclick="dailyReward()">
+🎁 일일보상
+</button>
+
+<button onclick="logout()">
+로그아웃
+</button>
+
+</div>
+
+<div class="panel">
+
+<h2>🎰 슬롯머신</h2>
+
+<input
+id="slotBet"
+type="number"
+value="50"
+min="10"
+placeholder="베팅"
+/>
+
+<div id="reels">
+❔ ❔ ❔
+</div>
+
+<button
+id="slotBtn"
+onclick="slot()"
+>
+돌리기
+</button>
+
+<p id="slotResult"></p>
+
+</div>
+
+<div class="panel">
+
+<h2>♦ 바카라</h2>
+
+<input
+id="baccaratBet"
+type="number"
+value="100"
+min="10"
+placeholder="바카라 베팅"
+/>
+
+<div
+id="baccaratCards"
+style="
+font-size:60px;
+margin:20px;
+"
+>
+🂠 🂠
+</div>
+
+<button
+id="playerBtn"
+onclick="playBaccarat('player')"
+>
+플레이어
+</button>
+
+<button
+id="bankerBtn"
+onclick="playBaccarat('banker')"
+>
+뱅커
+</button>
+
+<button
+id="tieBtn"
+onclick="playBaccarat('tie')"
+>
+무승부
+</button>
+
+<h3 id="baccaratResult">
+결과 없음
+</h3>
+
+</div>
+
+<div class="panel">
+
+<h2>🎱 물리엔진 핀볼</h2>
+
+<input
+id="pinballBet"
+type="number"
+value="30"
+min="10"
+placeholder="핀볼 베팅"
+/>
+
+<p>
+← → 플리퍼 / SPACE 공 발사
+</p>
+
+<div id="pinball"></div>
+
+</div>
+
+<div class="panel">
+
+<h2>🏆 업적</h2>
+
+<div id="achievements">
+없음
+</div>
+
+</div>
+
+<div
+id="adminPanel"
+class="panel"
+style="display:none;"
+>
+
+<h1>🛠 관리자 패널</h1>
+
+<input
+id="noticeInput"
+placeholder="공지 입력"
+/>
+
+<button onclick="setNotice()">
+공지 변경
+</button>
+
+<hr>
+
+<h2>💰 관리자 칩 관리</h2>
+
+<input
+id="targetUser"
+placeholder="대상 유저"
+/>
+
+<br>
+
+<input
+id="chipAmount"
+type="number"
+placeholder="칩 수량"
+/>
+
+<br>
+
+<input
+id="giveReason"
+placeholder="지급 사유"
+/>
+
+<br><br>
+
+<button onclick="giveChips()">
+칩 지급
+</button>
+
+<button onclick="removeChips()">
+칩 회수
+</button>
+
+<button onclick="setChips()">
+칩 설정
+</button>
+
+<button onclick="resetChips()">
+초기화
+</button>
+
+<br><br>
+
+<button onclick="giveAllChips()">
+전체 지급
+</button>
+
+<button onclick="removeAllChips()">
+전체 회수
+</button>
+
+<hr>
+
+<input
+id="rewardInput"
+type="number"
+placeholder="일일보상"
+/>
+
+<button onclick="changeDailyReward()">
+보상 변경
+</button>
+
+<br><br>
+
+<input
+id="jackpotInput"
+type="number"
+placeholder="잭팟 확률"
+/>
+
+<button onclick="changeJackpotRate()">
+확률 변경
+</button>
+
+<hr>
+
+<input
+id="banInput"
+placeholder="밴할 유저"
+/>
+
+<button onclick="banUser()">
+밴
+</button>
+
+<button onclick="unbanUser()">
+밴 해제
+</button>
+
+<br><br>
+
+<button onclick="lockServer()">
+서버 잠금
+</button>
+
+<button onclick="unlockServer()">
+서버 오픈
+</button>
+
+<hr>
+
+<h2>📜 유저 데이터</h2>
+
+<div
+id="userDataPanel"
+style="
+background:#111827;
+padding:10px;
+border-radius:10px;
+"
+>
+선택된 유저 없음
+</div>
+
+<button onclick="viewUserData()">
+조회
+</button>
+
+<hr>
+
+<h2>📜 칩 지급 기록</h2>
+
+<div id="chipHistory">
+기록 없음
+</div>
+
+<button onclick="clearChipHistory()">
+기록 초기화
+</button>
+
+<hr>
+
+<h2>📜 관리자 로그</h2>
+
+<div id="adminLogs"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let chips = 1000;
+let level = 1;
+let xp = 0;
+
+let slotCount = 0;
+
+let jackpotChance = 5;
+
+let dailyRewardAmount = 300;
+
+let isOP = false;
+
+let bannedUsers = [];
+
+let serverLocked = false;
+
+let currentBall = null;
+
+let accounts =
+JSON.parse(
+localStorage.getItem(
+"kiryunAccounts"
+) || "{}"
+);
+
+let users =
+JSON.parse(
+localStorage.getItem(
+"kiryunUsers"
+) || "{}"
+);
+
+let chipHistory =
+JSON.parse(
+localStorage.getItem(
+"kiryunChipHistory"
+) || "[]"
+);
+
+function saveAccounts(){
+
+localStorage.setItem(
+"kiryunAccounts",
+JSON.stringify(accounts)
+);
+
+}
+
+function saveUsers(){
+
+localStorage.setItem(
+"kiryunUsers",
+JSON.stringify(users)
+);
+
+}
+
+function saveChipHistory(){
+
+localStorage.setItem(
+"kiryunChipHistory",
+JSON.stringify(chipHistory)
+);
+
+}
+
+function saveData(){
+
+const currentUser =
+localStorage.getItem(
+"kiryunUser"
+);
+
+if(!currentUser) return;
+
+users[currentUser] = {
+chips,
+level,
+xp,
+banned:false
+};
+
+saveUsers();
+
+}
+
+function loadData(){
+
+const currentUser =
+localStorage.getItem(
+"kiryunUser"
+);
+
+if(
+currentUser &&
+users[currentUser]
+){
+
+chips =
+users[currentUser].chips;
+
+level =
+users[currentUser].level;
+
+xp =
+users[currentUser].xp;
+
+}
+
+updateUI();
+
+}
+
+function updateUI(){
+
+document.getElementById(
+"chips"
+).innerText=chips;
+
+document.getElementById(
+"level"
+).innerText=level;
+
+document.getElementById(
+"xp"
+).innerText=xp;
+
+saveData();
+
+}
+
+function gainXP(amount){
+
+xp += amount;
+
+if(xp >= 100){
+
+xp -= 100;
+
+level++;
+
+chips += 500;
+
+alert(
+"레벨업! +500칩"
+);
+
+}
+
+updateUI();
+
+}
+
+function unlockAchievement(text){
+
+document.getElementById(
+"achievements"
+).innerHTML +=
+`<p>${text}</p>`;
+
+}
+
+function adminLog(text){
+
+const log =
+document.getElementById(
+"adminLogs"
+);
+
+const time =
+new Date()
+.toLocaleString();
+
+log.innerHTML +=
+`[${time}] ${text}<br>`;
+
+log.scrollTop =
+log.scrollHeight;
+
+}
+
+function renderChipHistory(){
+
+const panel =
+document.getElementById(
+"chipHistory"
+);
+
+if(
+chipHistory.length===0
+){
+
+panel.innerHTML=
+"기록 없음";
+
+return;
+
+}
+
+panel.innerHTML="";
+
+chipHistory.forEach(log=>{
+
+panel.innerHTML +=
+
+`
+<div style="
+margin-bottom:10px;
+padding:10px;
+background:#1e293b;
+border-radius:10px;
+">
+
+🕒 ${log.time}<br>
+
+👤 대상 :
+${log.user}<br>
+
+🛠 관리자 :
+${log.admin}<br>
+
+📌 유형 :
+${log.type}<br>
+
+💰 칩 :
+${log.amount}<br>
+
+📝 사유 :
+${log.reason}
+
+</div>
+`;
+
+});
+
+}
+
+function addChipHistory(
+type,
+user,
+amount,
+reason
+){
+
+const history = {
+
+type,
+user,
+amount,
+reason,
+
+admin:
+localStorage.getItem(
+"kiryunUser"
+),
+
+time:
+new Date()
+.toLocaleString()
+
+};
+
+chipHistory.unshift(
+history
+);
+
+saveChipHistory();
+
+renderChipHistory();
+
+}
+
+function login(){
+
+const name =
+document.getElementById(
+"username"
+).value.trim();
+
+const password =
+document.getElementById(
+"password"
+).value.trim();
+
+if(!name || !password)
+return;
+
+if(serverLocked){
+
+alert(
+"서버 점검중"
+);
+
+return;
+
+}
+
+if(
+bannedUsers.includes(name)
+){
+
+alert(
+"밴된 유저"
+);
+
+return;
+
+}
+
+if(!accounts[name]){
+
+accounts[name] = {
+password
+};
+
+saveAccounts();
+
+alert(
+"회원가입 완료"
+);
+
+}
+
+if(
+accounts[name].password
+!== password
+){
+
+alert(
+"비밀번호 오류"
+);
+
+return;
+
+}
+
+if(!users[name]){
+
+users[name] = {
+
+chips:1000,
+level:1,
+xp:0,
+banned:false
+
+};
+
+saveUsers();
+
+}
+
+localStorage.setItem(
+"kiryunUser",
+name
+);
+
+if(
+name==="ヨルシカ" &&
+password==="1125"
+){
+
+isOP = true;
+
+document.getElementById(
+"adminPanel"
+).style.display="block";
+
+}
+
+loadUser();
+
+}
+
+function loadUser(){
+
+const user =
+localStorage.getItem(
+"kiryunUser"
+);
+
+if(user){
+
+document.getElementById(
+"loginPanel"
+).style.display="none";
+
+document.getElementById(
+"gamePanel"
+).style.display="block";
+
+document.getElementById(
+"playerName"
+).innerText=user;
+
+loadData();
+
+renderChipHistory();
+
+}
+
+}
+
+function logout(){
+
+localStorage.removeItem(
+"kiryunUser"
+);
+
+location.reload();
+
+}
+
+function dailyReward(){
+
+chips += dailyRewardAmount;
+
+gainXP(10);
+
+updateUI();
+
+alert(
+`🎁 +${dailyRewardAmount}칩`
+);
+
+}
+
+function slot(){
+
+const bet =
+parseInt(
+document.getElementById(
+"slotBet"
+).value
+);
+
+if(!bet || bet<=0)
+return;
+
+if(chips < bet){
+
+alert("칩 부족");
+
+return;
+
+}
+
+const btn =
+document.getElementById(
+"slotBtn"
+);
+
+btn.disabled=true;
+
+const icons=[
+"🍒",
+"🍋",
+"💎",
+"⭐",
+"7️⃣"
+];
+
+let spin =
+setInterval(()=>{
+
+let a=
+icons[Math.floor(
+Math.random()*icons.length
+)];
+
+let b=
+icons[Math.floor(
+Math.random()*icons.length
+)];
+
+let c=
+icons[Math.floor(
+Math.random()*icons.length
+)];
+
+document.getElementById(
+"reels"
+).innerHTML=
+`${a} ${b} ${c}`;
+
+},100);
+
+setTimeout(()=>{
+
+clearInterval(spin);
+
+let chance =
+Math.floor(
+Math.random()*100
+);
+
+let result="";
+
+if(chance < jackpotChance){
+
+chips += bet * 20;
+
+result =
+`🎉 JACKPOT +${bet*20}`;
+
+unlockAchievement(
+"🏆 첫 잭팟"
+);
+
+}else if(chance < 30){
+
+chips += bet * 3;
+
+result =
+`✨ 승리 +${bet*3}`;
+
+}else{
+
+chips -= bet;
+
+result =
+`😢 실패 -${bet}`;
+}
+
+slotCount++;
+
+if(slotCount >= 50){
+
+unlockAchievement(
+"🎰 슬롯 50회 달성"
+);
+
+}
+
+gainXP(5);
+
+updateUI();
+
+document.getElementById(
+"slotResult"
+).innerText=result;
+
+btn.disabled=false;
+
+},2000);
+
+}
+
+function playBaccarat(choice){
+
+const bet =
+parseInt(
+document.getElementById(
+"baccaratBet"
+).value
+);
+
+if(!bet || bet<=0)
+return;
+
+if(chips < bet){
+
+alert("칩 부족");
+
+return;
+
+}
+
+const playerBtn =
+document.getElementById(
+"playerBtn"
+);
+
+const bankerBtn =
+document.getElementById(
+"bankerBtn"
+);
+
+const tieBtn =
+document.getElementById(
+"tieBtn"
+);
+
+playerBtn.disabled=true;
+bankerBtn.disabled=true;
+tieBtn.disabled=true;
+
+const cards=[
+"🂡","🂢","🂣","🂤",
+"🂥","🂦","🂧","🂨",
+"🂩","🂪"
+];
+
+let animation =
+setInterval(()=>{
+
+const random1 =
+cards[Math.floor(
+Math.random()*cards.length
+)];
+
+const random2 =
+cards[Math.floor(
+Math.random()*cards.length
+)];
+
+document.getElementById(
+"baccaratCards"
+).innerHTML=
+`${random1} ${random2}`;
+
+},100);
+
+setTimeout(()=>{
+
+clearInterval(animation);
+
+const player =
+Math.floor(
+Math.random()*10
+);
+
+const banker =
+Math.floor(
+Math.random()*10
+);
+
+document.getElementById(
+"baccaratCards"
+).innerHTML=
+`${cards[player]} ${cards[banker]}`;
+
+let result="";
+
+if(player > banker){
+
+result="player";
+
+}else if(
+banker > player
+){
+
+result="banker";
+
+}else{
+
+result="tie";
+}
+
+let text =
+`플레이어:${player}
+ 뱅커:${banker}
+ 결과:${result}`;
+
+if(choice===result){
+
+if(result==="tie"){
+
+chips += bet * 5;
+
+text +=
+` 🎉 +${bet*5}`;
+
+}else{
+
+chips += bet * 2;
+
+text +=
+` 🎉 +${bet*2}`;
+}
+
+gainXP(10);
+
+unlockAchievement(
+"♦ 바카라 승리"
+);
+
+}else{
+
+chips -= bet;
+
+text +=
+` 😢 -${bet}`;
+}
+
+updateUI();
+
+document.getElementById(
+"baccaratResult"
+).innerText=text;
+
+playerBtn.disabled=false;
+bankerBtn.disabled=false;
+tieBtn.disabled=false;
+
+},2000);
+
+}
+
+function setNotice(){
+
+if(!isOP) return;
+
+const text =
+document.getElementById(
+"noticeInput"
+).value;
+
+document.getElementById(
+"notice"
+).innerText=text;
+
+adminLog(
+"공지 변경"
+);
+
+}
+
+function giveChips(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"targetUser"
+).value;
+
+const amount =
+parseInt(
+document.getElementById(
+"chipAmount"
+).value
+);
+
+const reason =
+document.getElementById(
+"giveReason"
+).value;
+
+if(!users[user]){
+
+alert(
+"유저 없음"
+);
+
+return;
+
+}
+
+users[user].chips += amount;
+
+saveUsers();
+
+addChipHistory(
+"지급",
+user,
+amount,
+reason
+);
+
+adminLog(
+`${user}
++${amount}`
+);
+
+alert(
+`${user}
+지급 완료`
+);
+
+}
+
+function removeChips(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"targetUser"
+).value;
+
+const amount =
+parseInt(
+document.getElementById(
+"chipAmount"
+).value
+);
+
+if(!users[user])
+return;
+
+users[user].chips -= amount;
+
+if(
+users[user].chips < 0
+){
+
+users[user].chips = 0;
+}
+
+saveUsers();
+
+addChipHistory(
+"회수",
+user,
+amount,
+"관리자 회수"
+);
+
+}
+
+function setChips(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"targetUser"
+).value;
+
+const amount =
+parseInt(
+document.getElementById(
+"chipAmount"
+).value
+);
+
+if(!users[user])
+return;
+
+users[user].chips =
+amount;
+
+saveUsers();
+
+addChipHistory(
+"설정",
+user,
+amount,
+"칩 설정"
+);
+
+}
+
+function resetChips(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"targetUser"
+).value;
+
+if(!users[user])
+return;
+
+users[user].chips =
+1000;
+
+saveUsers();
+
+adminLog(
+`${user}
+칩 초기화`
+);
+
+}
+
+function giveAllChips(){
+
+if(!isOP) return;
+
+const amount =
+parseInt(
+document.getElementById(
+"chipAmount"
+).value
+);
+
+Object.keys(users)
+.forEach(user=>{
+
+users[user].chips += amount;
+
+});
+
+saveUsers();
+
+addChipHistory(
+"전체지급",
+"ALL",
+amount,
+"전체 유저 지급"
+);
+
+}
+
+function removeAllChips(){
+
+if(!isOP) return;
+
+const amount =
+parseInt(
+document.getElementById(
+"chipAmount"
+).value
+);
+
+Object.keys(users)
+.forEach(user=>{
+
+users[user].chips -= amount;
+
+if(
+users[user].chips < 0
+){
+
+users[user].chips = 0;
+}
+
+});
+
+saveUsers();
+
+addChipHistory(
+"전체회수",
+"ALL",
+amount,
+"전체 회수"
+);
+
+}
+
+function clearChipHistory(){
+
+if(!isOP) return;
+
+chipHistory = [];
+
+saveChipHistory();
+
+renderChipHistory();
+
+}
+
+function viewUserData(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"targetUser"
+).value;
+
+if(!users[user]){
+
+alert(
+"유저 없음"
+);
+
+return;
+
+}
+
+const data =
+users[user];
+
+document.getElementById(
+"userDataPanel"
+).innerHTML=
+
+`
+👤 유저 :
+${user}<br>
+
+💰 칩 :
+${data.chips}<br>
+
+⭐ 레벨 :
+${data.level}<br>
+
+✨ XP :
+${data.xp}<br>
+
+🚫 밴 :
+${data.banned}
+`;
+
+}
+
+function changeDailyReward(){
+
+if(!isOP) return;
+
+dailyRewardAmount =
+parseInt(
+document.getElementById(
+"rewardInput"
+).value
+);
+
+adminLog(
+"일일보상 변경"
+);
+
+}
+
+function changeJackpotRate(){
+
+if(!isOP) return;
+
+jackpotChance =
+parseInt(
+document.getElementById(
+"jackpotInput"
+).value
+);
+
+adminLog(
+"잭팟 확률 변경"
+);
+
+}
+
+function banUser(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"banInput"
+).value;
+
+bannedUsers.push(user);
+
+adminLog(
+`${user} 밴`
+);
+
+}
+
+function unbanUser(){
+
+if(!isOP) return;
+
+const user =
+document.getElementById(
+"banInput"
+).value;
+
+bannedUsers =
+bannedUsers.filter(
+u=>u!==user
+);
+
+adminLog(
+`${user} 밴 해제`
+);
+
+}
+
+function lockServer(){
+
+serverLocked = true;
+
+adminLog(
+"서버 잠금"
+);
+
+}
+
+function unlockServer(){
+
+serverLocked = false;
+
+adminLog(
+"서버 오픈"
+);
+
+}
+
+const {
+Engine,
+Render,
+Runner,
+Bodies,
+Body,
+Composite,
+Events
+} = Matter;
+
+const engine =
+Engine.create();
+
+const render =
+Render.create({
+
+element:
+document.getElementById(
+"pinball"
+),
+
+engine:engine,
+
+options:{
+
+width:650,
+height:700,
+
+wireframes:false,
+
+background:"#111827"
+
+}
+
+});
+
+Render.run(render);
+
+const runner =
+Runner.create();
+
+Runner.run(
+runner,
+engine
+);
+
+const walls = [
+
+Bodies.rectangle(
+0,
+350,
+20,
+700,
+{isStatic:true}
+),
+
+Bodies.rectangle(
+650,
+350,
+20,
+700,
+{isStatic:true}
+),
+
+Bodies.rectangle(
+325,
+0,
+650,
+20,
+{isStatic:true}
+),
+
+Bodies.rectangle(
+325,
+700,
+650,
+20,
+{isStatic:true}
+)
+
+];
+
+const bumper1 =
+Bodies.circle(
+200,
+220,
+30,
+{
+isStatic:true,
+restitution:1.5
+}
+);
+
+const bumper2 =
+Bodies.circle(
+450,
+220,
+30,
+{
+isStatic:true,
+restitution:1.5
+}
+);
+
+const jackpotBumper =
+Bodies.circle(
+325,
+350,
+45,
+{
+isStatic:true,
+restitution:2
+}
+);
+
+const leftFlipper =
+Bodies.rectangle(
+240,
+600,
+120,
+20,
+{
+isStatic:true
+}
+);
+
+const rightFlipper =
+Bodies.rectangle(
+410,
+600,
+120,
+20,
+{
+isStatic:true
+}
+);
+
+Composite.add(
+engine.world,
+[
+...walls,
+bumper1,
+bumper2,
+jackpotBumper,
+leftFlipper,
+rightFlipper
+]
+);
+
+function launchBall(){
+
+const bet =
+parseInt(
+document.getElementById(
+"pinballBet"
+).value
+);
+
+if(chips < bet){
+
+alert(
+"칩 부족"
+);
+
+return;
+
+}
+
+chips -= bet;
+
+updateUI();
+
+if(currentBall) return;
+
+currentBall =
+Bodies.circle(
+580,
+80,
+15,
+{
+restitution:0.8
+}
+);
+
+Composite.add(
+engine.world,
+currentBall
+);
+
+}
+
+launchBall();
+
+Events.on(
+engine,
+"collisionStart",
+event=>{
+
+event.pairs.forEach(pair=>{
+
+const a =
+pair.bodyA;
+
+const b =
+pair.bodyB;
+
+const bet =
+parseInt(
+document.getElementById(
+"pinballBet"
+).value
+);
+
+if(
+a===bumper1||
+a===bumper2||
+b===bumper1||
+b===bumper2
+){
+
+chips +=
+Math.floor(bet/2);
+
+gainXP(1);
+
+updateUI();
+
+}
+
+if(
+a===jackpotBumper||
+b===jackpotBumper
+){
+
+chips +=
+bet * 10;
+
+gainXP(20);
+
+unlockAchievement(
+"🎱 핀볼 잭팟"
+);
+
+updateUI();
+
+}
+
+});
+
+});
+
+document.addEventListener(
+"keydown",
+e=>{
+
+if(e.key==="ArrowLeft"){
+
+Body.rotate(
+leftFlipper,
+-0.5
+);
+
+setTimeout(()=>{
+
+Body.rotate(
+leftFlipper,
+0.5
+);
+
+},100);
+
+}
+
+if(e.key==="ArrowRight"){
+
+Body.rotate(
+rightFlipper,
+0.5
+);
+
+setTimeout(()=>{
+
+Body.rotate(
+rightFlipper,
+-0.5
+);
+
+},100);
+
+}
+
+if(e.code==="Space"){
+
+launchBall();
+
+}
+
+});
+
+setInterval(()=>{
+
+saveUsers();
+saveChipHistory();
+
+console.log(
+"자동 저장 완료"
+);
+
+},30000);
+
+loadUser();
+
+</script>
+
+</body>
+</html>
